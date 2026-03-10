@@ -1,0 +1,98 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:simonwillison.net)",
+      "WebFetch(domain:twitter-thread.com)",
+      "WebFetch(domain:x.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:www.anup.io)",
+      "WebFetch(domain:howborisusesclaudecode.com)",
+      "WebFetch(domain:shiftmag.dev)",
+      "WebFetch(domain:karpathy.bearblog.dev)",
+      "WebFetch(domain:www.builder.io)",
+      "WebFetch(domain:www.humanlayer.dev)",
+      "WebFetch(domain:www.lennysnewsletter.com)",
+      "WebFetch(domain:karozieminski.substack.com)",
+      "WebFetch(domain:venturebeat.com)",
+      "WebFetch(domain:www.pixelsham.com)",
+      "WebFetch(domain:www.anthropic.com)",
+      "WebFetch(domain:blog.devgenius.io)",
+      "WebFetch(domain:arxiv.org)",
+      "WebFetch(domain:paddo.dev)",
+      "WebFetch(domain:addyosmani.com)",
+      "WebFetch(domain:gist.github.com)",
+      "Bash(ruff check:*)",
+      "Bash(python:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(echo:*)",
+      "Bash(pwd:*)",
+      "Bash(which:*)",
+      "Bash(where:*)",
+      "Bash(dir:*)",
+      "Bash(type:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm list:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(pip list:*)",
+      "Bash(pip show:*)",
+      "Bash(uvicorn:*)",
+      "Bash(alembic:*)",
+      "Bash(curl:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(tree:*)",
+      "Bash(env:*)",
+      "Bash(printenv:*)",
+      "mcp__ide__getDiagnostics",
+      "WebFetch(domain:mikhail.io)",
+      "WebFetch(domain:executeautomation.github.io)",
+      "WebFetch(domain:shipyard.build)",
+      "WebFetch(domain:www.chatprd.ai)",
+      "WebFetch(domain:www.nathanonn.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:alexop.dev)",
+      "WebFetch(domain:egghead.io)",
+      "WebFetch(domain:www.morphllm.com)",
+      "Skill(e2e-verify)",
+      "mcp__playwright__*"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=\"$(jq -r '.tool_input.file_path' <<< \"$(cat)\")\"\nif [[ \"$FILE\" =~ \\.(js|jsx|ts|tsx|json|css)$ ]]; then\n  npx prettier --write \"$FILE\" 2>/dev/null\nelif [[ \"$FILE\" =~ \\.py$ ]]; then\n  python -m ruff format \"$FILE\" 2>/dev/null\n  python -m ruff check --fix \"$FILE\" 2>/dev/null\nfi\nexit 0"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "SESSION_ID=$(jq -r '.session_id' <<< \"$(cat)\")\nif [ -f \".claude/progress-${SESSION_ID}.md\" ]; then\n  cat \".claude/progress-${SESSION_ID}.md\"\nelif [ -f .claude/progress.md ]; then\n  cat .claude/progress.md\nelse\n  echo 'No progress file found. Ask the user for context.'\nfi"
+          }
+        ]
+      }
+    ]
+  }
+}
