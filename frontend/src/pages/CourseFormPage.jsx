@@ -21,32 +21,30 @@ export default function CourseFormPage() {
 
   async function fetchCourse() {
     try {
-      // We need to fetch via program courses — get the course detail by finding it
-      // For editing, we'll fetch all programs and find the course
-      // Simpler: just fetch the course's program and find the course in it
       const response = await fetch(`${BASE_API_URL}/courses/${courseId}`, {
-        method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        // We actually need a GET. Since there's no direct GET /courses/:id,
-        // let's rely on having the data. For now, just set a minimal approach:
-        // We can use the update endpoint structure. Let's actually fetch program detail.
       });
-      // Since we don't have a direct GET /courses/:id endpoint, let's skip prefill
-      // for the edit case we'd need to get it from the parent program page
-      // For now, we'll trust the data was passed or we add a GET endpoint later.
+      if (!response.ok) {
+        throw new Error("Could not load course data.");
+      }
+      const data = await response.json();
+      setName(data.name);
+      setCode(data.code);
+      setDescription(data.description || "");
+      setYhPoints(data.yh_points);
+      setSortOrder(data.sort_order);
+      setCourseProgramId(data.program_id);
     } catch (err) {
-      setMessage({ type: "error", text: "Could not load course data." });
+      setMessage({ type: "error", text: err.message });
     }
   }
 
   useEffect(() => {
-    // For editing, we'd need course data. Since we don't have a GET /courses/:id,
-    // the user navigates here from ProgramDetailPage which could pass state.
-    // For simplicity, we leave fields empty on edit and the user re-enters.
-    // A proper implementation would add a GET /courses/:id endpoint.
+    if (isEditing) {
+      fetchCourse();
+    }
   }, [courseId]);
 
   async function handleSubmit(e) {
@@ -93,7 +91,7 @@ export default function CourseFormPage() {
         throw new Error(data.detail || "Failed to save course");
       }
 
-      const targetProgramId = programId || data.program_id;
+      const targetProgramId = programId || courseProgramId || data.program_id;
       navigate(`/dashboard/programs/${targetProgramId}`);
     } catch (err) {
       setMessage({ type: "error", text: err.message });
@@ -102,8 +100,9 @@ export default function CourseFormPage() {
     }
   }
 
-  const backLink = programId
-    ? `/dashboard/programs/${programId}`
+  const resolvedProgramId = programId || courseProgramId;
+  const backLink = resolvedProgramId
+    ? `/dashboard/programs/${resolvedProgramId}`
     : "/dashboard/programs";
 
   return (

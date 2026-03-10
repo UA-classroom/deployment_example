@@ -18,7 +18,7 @@ from app.api.v1.core.schemas import (
 from app.security import hash_password
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 VALID_PROGRAM_STATUSES = ("draft", "active", "completed", "archived")
 VALID_COHORT_STATUSES = ("planned", "active", "completed")
@@ -298,6 +298,18 @@ def create_course(db: Session, program_id: int, data: CourseCreateSchema) -> Cou
     return course
 
 
+def get_course_by_id(db: Session, course_id: int) -> Course:
+    course = db.scalars(
+        select(Course).where(Course.id == course_id)
+    ).first()
+    if not course:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Course with ID {course_id} not found",
+        )
+    return course
+
+
 def update_course(db: Session, course_id: int, data: CourseUpdateSchema) -> Course:
     course = db.scalars(
         select(Course).where(Course.id == course_id)
@@ -505,8 +517,10 @@ def list_cohort_students(db: Session, cohort_id: int) -> list[StudentEnrollment]
             detail=f"Cohort with ID {cohort_id} not found",
         )
     return list(db.scalars(
-        select(StudentEnrollment).where(StudentEnrollment.cohort_id == cohort_id)
-    ).all())
+        select(StudentEnrollment)
+        .where(StudentEnrollment.cohort_id == cohort_id)
+        .options(joinedload(StudentEnrollment.student), joinedload(StudentEnrollment.cohort))
+    ).unique().all())
 
 
 def update_enrollment_status(
@@ -541,8 +555,10 @@ def update_enrollment_status(
 
 def get_student_enrollments(db: Session, student_id: int) -> list[StudentEnrollment]:
     return list(db.scalars(
-        select(StudentEnrollment).where(StudentEnrollment.student_id == student_id)
-    ).all())
+        select(StudentEnrollment)
+        .where(StudentEnrollment.student_id == student_id)
+        .options(joinedload(StudentEnrollment.cohort), joinedload(StudentEnrollment.student))
+    ).unique().all())
 
 
 # --- Grade ---
@@ -592,14 +608,18 @@ def list_course_grades(db: Session, course_id: int) -> list[Grade]:
             detail=f"Course with ID {course_id} not found",
         )
     return list(db.scalars(
-        select(Grade).where(Grade.course_id == course_id)
-    ).all())
+        select(Grade)
+        .where(Grade.course_id == course_id)
+        .options(joinedload(Grade.course), joinedload(Grade.student))
+    ).unique().all())
 
 
 def get_student_grades(db: Session, student_id: int) -> list[Grade]:
     return list(db.scalars(
-        select(Grade).where(Grade.student_id == student_id)
-    ).all())
+        select(Grade)
+        .where(Grade.student_id == student_id)
+        .options(joinedload(Grade.course), joinedload(Grade.student))
+    ).unique().all())
 
 
 def update_grade(

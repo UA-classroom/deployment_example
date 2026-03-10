@@ -184,6 +184,13 @@ class CohortOutSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CohortRefSchema(BaseModel):
+    id: int
+    cohort_code: str
+    program_id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
 class EnrollmentOutSchema(BaseModel):
     id: int
     student_id: int
@@ -192,6 +199,7 @@ class EnrollmentOutSchema(BaseModel):
     status: str
     graduation_date: date | None
     student: UserOutSchema
+    cohort: CohortRefSchema
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -224,6 +232,13 @@ class GradeUpdateSchema(BaseModel):
     notes: str | None = None
 
 
+class CourseRefSchema(BaseModel):
+    id: int
+    name: str
+    code: str
+    model_config = ConfigDict(from_attributes=True)
+
+
 class GradeOutSchema(BaseModel):
     id: int
     student_id: int
@@ -234,4 +249,5 @@ class GradeOutSchema(BaseModel):
     notes: str | None
     is_reexamination: bool
     student: UserOutSchema
+    course: CourseRefSchema
     model_config = ConfigDict(from_attributes=True)

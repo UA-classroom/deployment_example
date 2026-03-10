@@ -1,8 +1,7 @@
 import base64
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from random import SystemRandom
 from typing import Annotated
-from uuid import UUID, uuid4
 
 from app.api.v1.core.models import Token, User
 from app.db_setup import get_db

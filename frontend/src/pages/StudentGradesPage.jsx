@@ -93,7 +93,7 @@ export default function StudentGradesPage() {
                 {enrollments.map((e) => (
                   <tr key={e.id}>
                     <td className="py-2 px-4 text-sm text-gray-900">
-                      Cohort #{e.cohort_id}
+                      {e.cohort?.cohort_code || `Cohort #${e.cohort_id}`}
                     </td>
                     <td className="py-2 px-4 text-sm text-gray-500">
                       {e.enrollment_date}
@@ -138,7 +138,10 @@ export default function StudentGradesPage() {
                 {grades.map((g) => (
                   <tr key={g.id}>
                     <td className="py-2 px-4 text-sm text-gray-900">
-                      Course #{g.course_id}
+                      {g.course?.name || `Course #${g.course_id}`}
+                      {g.course?.code && (
+                        <span className="ml-1 text-gray-400 text-xs">({g.course.code})</span>
+                      )}
                     </td>
                     <td className="py-2 px-4 text-sm">
                       <span

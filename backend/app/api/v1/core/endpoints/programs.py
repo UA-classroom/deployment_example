@@ -7,7 +7,6 @@ from app.api.v1.core.schemas import (
     ProgramDetailSchema,
     ProgramOutSchema,
     ProgramUpdateSchema,
-    UserOutSchema,
 )
 from app.api.v1.core.services import (
     assign_program_leader,
@@ -15,6 +14,7 @@ from app.api.v1.core.services import (
     create_program,
     delete_course,
     delete_program,
+    get_course_by_id,
     get_program_detail,
     update_course,
     update_program,
@@ -114,6 +114,15 @@ def create_course_endpoint(
 # --- Course direct endpoints (for update/delete by course id) ---
 
 course_router = APIRouter(tags=["courses"], prefix="/courses")
+
+
+@course_router.get("/{course_id}", response_model=CourseOutSchema)
+def get_course_endpoint(
+    course_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return get_course_by_id(db, course_id)
 
 
 @course_router.put("/{course_id}", response_model=CourseOutSchema)
